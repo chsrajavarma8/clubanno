@@ -1,7 +1,8 @@
-// Vercel serverless entry point. Any request to /api/* lands here (catch-all
-// route) and is handed to the same Express app used for local dev, so
-// /api/auth/login, /api/auth/logout, /api/auth/me, and /api/auth/clubs all
-// keep working exactly as they do locally — no route changes needed.
+// Vercel serverless entry point. vercel.json rewrites every /api/* request
+// here, and this is handed to the same Express app used for local dev, so
+// /api/auth/login, /api/auth/logout, /api/auth/me, /api/auth/clubs,
+// /api/clubs, /api/posts, and /api/notifications all keep working exactly
+// as they do locally — no route changes needed.
 //
 // Login state lives in MongoDB (the `sessions` collection), not in server
 // memory, so this works fine across separate serverless invocations: logging

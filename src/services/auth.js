@@ -9,7 +9,7 @@ export async function login(username, password) {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
-  const data = await parseJson(res, 'Invalid username or password.')
+  const data = await parseJson(res, `Login failed (server returned ${res.status}). This is not necessarily a wrong password — check that the API is reachable.`)
   setToken(data.token)
   return data.identity
 }
