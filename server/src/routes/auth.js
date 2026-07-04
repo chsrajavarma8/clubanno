@@ -10,6 +10,7 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 export const authRouter = Router()
 
 const GENERIC_LOGIN_ERROR = 'Invalid username or password.'
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 authRouter.post('/login', asyncHandler(async (req, res) => {
   const { username, password } = req.body || {}
@@ -52,8 +53,11 @@ authRouter.post('/clubs', requireAuth, requireAdmin, asyncHandler(async (req, re
   }
 
   const uname = username.trim().toLowerCase()
+  if (!EMAIL_RE.test(uname)) {
+    return res.status(400).json({ error: 'Enter a valid college email address (e.g. clubname@college.edu).' })
+  }
   const existing = await User.findOne({ username: uname })
-  if (existing) return res.status(409).json({ error: 'That username is already taken. Choose another.' })
+  if (existing) return res.status(409).json({ error: 'That email is already registered to a club. Use another.' })
 
   if (password.length < 6) {
     return res.status(400).json({ error: 'Password should be at least 6 characters.' })

@@ -33,11 +33,13 @@ export default function LoginModal({ onClose, onLogin }) {
         </div>
         <div className="modal-body">
           <div className="field">
-            <label>Username</label>
+            <label>Email</label>
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. codingclub"
+              placeholder="e.g. codingclub@college.edu"
+              autoCapitalize="none"
+              autoCorrect="off"
               autoFocus
             />
           </div>

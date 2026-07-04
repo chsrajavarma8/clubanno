@@ -43,13 +43,18 @@ export default function AdminPanelModal({
     }
   }
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   const canCreate = name.trim() && description.trim() && username.trim() && password.trim()
 
   async function handleCreate() {
     if (!canCreate || creating) return
     const uname = username.trim().toLowerCase()
+    if (!EMAIL_RE.test(uname)) {
+      setFormError('Enter a valid college email address (e.g. clubname@college.edu).')
+      return
+    }
     if (existingUsernames.includes(uname)) {
-      setFormError('That username is already taken. Choose another.')
+      setFormError('That email is already registered to a club. Use another.')
       return
     }
     if (password.trim().length < 6) {
@@ -151,8 +156,13 @@ export default function AdminPanelModal({
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What's this club about?" />
               </div>
               <div className="field">
-                <label>Club Username</label>
-                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. chessclub" />
+                <label>Club Email</label>
+                <input
+                  type="email"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. chessclub@college.edu"
+                />
               </div>
               <div className="field">
                 <label>Club Password</label>
@@ -170,7 +180,7 @@ export default function AdminPanelModal({
               <div className="admin-active-row" key={club.id}>
                 <span className="club-icon">{club.icon}</span>
                 <span>{club.name}</span>
-                <span className="admin-request-meta">Login: {club.username}</span>
+                <span className="admin-request-meta">Email: {club.username}</span>
                 <div className="admin-row-actions">
                   <span className="admin-request-meta">{club.postCount ?? 0} post{club.postCount === 1 ? '' : 's'}</span>
                   {confirmingClubId === club.id ? (
