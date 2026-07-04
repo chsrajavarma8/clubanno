@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import ReactionBar from './ReactionBar'
 import ImageLightbox from './ImageLightbox'
@@ -16,8 +16,15 @@ function daysLeft(expiresAt) {
   return Math.max(1, Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24)))
 }
 
-export default function AnnouncementCard({ announcement, club, reactions, onReact, canDelete, onDelete }) {
+function AnnouncementCard({ announcement, club, reactions, onReact, canDelete, onDelete, currentUser, onRequireLogin }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
+
+  function handleLinkClick(e) {
+    if (!currentUser) {
+      e.preventDefault()
+      onRequireLogin?.()
+    }
+  }
 
   return (
     <div className="announcement-card">
@@ -59,6 +66,7 @@ export default function AnnouncementCard({ announcement, club, reactions, onReac
           href={announcement.link}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleLinkClick}
         >
           Open Link ↗
         </a>
@@ -72,3 +80,5 @@ export default function AnnouncementCard({ announcement, club, reactions, onReac
     </div>
   )
 }
+
+export default memo(AnnouncementCard)

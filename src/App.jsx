@@ -178,7 +178,7 @@ export default function App() {
       const identity = await authService.signup(email, dob, password)
       setCurrentUser(identity)
       setShowLoginModal(false)
-      setToast({ title: 'Account created', body: `Welcome! You're logged in as ${identity.username}.` })
+      setToast({ title: 'Welcome to Club Announcements!', body: `Account created — you're logged in as ${identity.username}.` })
       return {}
     } catch (err) {
       return { error: err.message }
@@ -188,13 +188,21 @@ export default function App() {
   function loginToast(identity) {
     if (identity.type === 'admin') return { title: 'Logged in as Admin', body: 'You can now review pending posts and manage clubs.' }
     if (identity.type === 'club') return { title: `Logged in as ${identity.name}`, body: 'You can now submit posts for admin approval.' }
-    return { title: `Logged in as ${identity.username}`, body: 'You can now browse and react to posts.' }
+    return { title: 'Welcome to Club Announcements!', body: `Logged in as ${identity.username}. Browse posts, open links, and react to what you like.` }
   }
 
   async function handleLogout() {
     await authService.logout()
     setCurrentUser(null)
     setShowAdminPanel(false)
+    setToast({ title: 'Thanks for stopping by!', body: 'Thank you for choosing Community Hub — come back and visit again soon.' })
+  }
+
+  // Guests can see everything but need to log in before opening an external
+  // link on a post — nudges anonymous browsers toward creating an account.
+  function handleRequireLogin() {
+    setToast({ title: 'Log in required', body: 'Log in or create an account to open external links.' })
+    setShowLoginModal(true)
   }
 
   async function handleSubmitPost(data) {
@@ -415,6 +423,7 @@ export default function App() {
           onReact={handleReact}
           currentUser={currentUser}
           onDeletePost={handleDeletePost}
+          onRequireLogin={handleRequireLogin}
         />
       </div>
 

@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import * as authService from '../services/auth'
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const ALLOWED_DOMAINS = ['student.gitam.edu', 'gitam.in']
+function isGitamEmail(email) {
+  if (!EMAIL_RE.test(email)) return false
+  const domain = email.split('@')[1]?.toLowerCase()
+  return ALLOWED_DOMAINS.includes(domain)
+}
+
 export default function LoginModal({ onClose, onLogin, onSignup }) {
   const [mode, setMode] = useState('login') // 'login' | 'signup' | 'forgot' | 'reset'
 
@@ -50,6 +58,10 @@ export default function LoginModal({ onClose, onLogin, onSignup }) {
     if (submitting) return
     if (!signupEmail.trim() || !signupDob || !signupPassword.trim()) {
       setError('Fill in email, date of birth, and password.')
+      return
+    }
+    if (!isGitamEmail(signupEmail.trim())) {
+      setError('Use your GITAM email (e.g. yourname@student.gitam.edu or clubname@gitam.in).')
       return
     }
     if (signupPassword.length < 6) {
@@ -140,7 +152,7 @@ export default function LoginModal({ onClose, onLogin, onSignup }) {
                 <input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. codingclub@college.edu"
+                  placeholder="e.g. codingclub@gitam.in"
                   autoCapitalize="none"
                   autoCorrect="off"
                   autoFocus
@@ -172,7 +184,7 @@ export default function LoginModal({ onClose, onLogin, onSignup }) {
                   type="email"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
-                  placeholder="e.g. yourname@college.edu"
+                  placeholder="e.g. yourname@student.gitam.edu"
                   autoFocus
                 />
               </div>
@@ -217,7 +229,7 @@ export default function LoginModal({ onClose, onLogin, onSignup }) {
                   type="email"
                   value={fpEmail}
                   onChange={(e) => setFpEmail(e.target.value)}
-                  placeholder="e.g. yourname@college.edu"
+                  placeholder="e.g. yourname@student.gitam.edu"
                   autoFocus
                 />
               </div>

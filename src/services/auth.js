@@ -80,3 +80,10 @@ export async function resetPassword(email, dob, newPassword) {
   await parseJson(res, 'Could not reset password.')
   return true
 }
+
+// Admin-only: list self-service student accounts for the Admin Panel.
+export async function getStudents() {
+  const res = await apiFetch('/api/auth/students')
+  const data = await parseJson(res, 'Could not load student accounts.')
+  return data.students
+}

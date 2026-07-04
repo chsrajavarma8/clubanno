@@ -1,6 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { CATEGORIES, CLUB_ICONS } from '../data/seed'
+import * as authService from '../services/auth'
+
+function formatDate(value) {
+  if (!value) return '—'
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString()
+}
 
 function timeAgo(ts) {
   const diff = Date.now() - ts
@@ -32,6 +39,20 @@ export default function AdminPanelModal({
   const [creating, setCreating] = useState(false)
   const [confirmingClubId, setConfirmingClubId] = useState(null)
   const [deletingClubId, setDeletingClubId] = useState(null)
+  const [students, setStudents] = useState(null) // null = not loaded yet
+  const [studentsError, setStudentsError] = useState('')
+  const [studentsLoading, setStudentsLoading] = useState(false)
+
+  useEffect(() => {
+    if (tab !== 'students' || students !== null || studentsLoading) return
+    setStudentsLoading(true)
+    setStudentsError('')
+    authService
+      .getStudents()
+      .then(setStudents)
+      .catch((err) => setStudentsError(err.message))
+      .finally(() => setStudentsLoading(false))
+  }, [tab, students, studentsLoading])
 
   async function handleConfirmDeleteClub(clubId) {
     setDeletingClubId(clubId)
@@ -43,14 +64,20 @@ export default function AdminPanelModal({
     }
   }
 
+  const ALLOWED_DOMAINS = ['student.gitam.edu', 'gitam.in']
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  function isGitamEmail(email) {
+    if (!EMAIL_RE.test(email)) return false
+    const domain = email.split('@')[1]?.toLowerCase()
+    return ALLOWED_DOMAINS.includes(domain)
+  }
   const canCreate = name.trim() && description.trim() && username.trim() && password.trim()
 
   async function handleCreate() {
     if (!canCreate || creating) return
     const uname = username.trim().toLowerCase()
-    if (!EMAIL_RE.test(uname)) {
-      setFormError('Enter a valid college email address (e.g. clubname@college.edu).')
+    if (!isGitamEmail(uname)) {
+      setFormError('Use a GITAM email (e.g. clubname@gitam.in or name@student.gitam.edu).')
       return
     }
     if (existingUsernames.includes(uname)) {
@@ -93,6 +120,9 @@ export default function AdminPanelModal({
           </button>
           <button className={`admin-tab${tab === 'clubs' ? ' selected' : ''}`} onClick={() => setTab('clubs')}>
             All Clubs ({clubs.length})
+          </button>
+          <button className={`admin-tab${tab === 'students' ? ' selected' : ''}`} onClick={() => setTab('students')}>
+            Students{students ? ` (${students.length})` : ''}
           </button>
         </div>
 
@@ -161,7 +191,7 @@ export default function AdminPanelModal({
                   type="email"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. chessclub@college.edu"
+                  placeholder="e.g. chessclub@gitam.in"
                 />
               </div>
               <div className="field">
@@ -208,6 +238,25 @@ export default function AdminPanelModal({
                 </div>
               </div>
             ))
+          )}
+
+          {tab === 'students' && (
+            studentsLoading ? (
+              <div className="notif-empty">Loading students…</div>
+            ) : studentsError ? (
+              <div className="form-error">{studentsError}</div>
+            ) : !students || students.length === 0 ? (
+              <div className="notif-empty">No students have signed up yet.</div>
+            ) : (
+              students.map((s) => (
+                <div className="admin-active-row" key={s.id}>
+                  <span className="club-icon">🎓</span>
+                  <span>{s.email}</span>
+                  <span className="admin-request-meta">DOB: {formatDate(s.dob)}</span>
+                  <span className="admin-request-meta">Joined: {formatDate(s.joinedAt)}</span>
+                </div>
+              ))
+            )
           )}
         </div>
 

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Trash2 } from 'lucide-react'
 import ReactionBar from './ReactionBar'
 
@@ -10,7 +11,14 @@ function timeAgo(ts) {
   return `${days}d ago`
 }
 
-export default function PromotionCard({ promotion, club, reactions, onReact, canDelete, onDelete }) {
+function PromotionCard({ promotion, club, reactions, onReact, canDelete, onDelete, currentUser, onRequireLogin }) {
+  function handleLinkClick(e) {
+    if (!currentUser) {
+      e.preventDefault()
+      onRequireLogin?.()
+    }
+  }
+
   return (
     <div className="announcement-card">
       <div className="announcement-top">
@@ -36,6 +44,7 @@ export default function PromotionCard({ promotion, club, reactions, onReact, can
         href={promotion.reelLink}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleLinkClick}
       >
         ▶ Watch Reel on Instagram
       </a>
@@ -44,3 +53,5 @@ export default function PromotionCard({ promotion, club, reactions, onReact, can
     </div>
   )
 }
+
+export default memo(PromotionCard)

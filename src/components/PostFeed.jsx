@@ -1,7 +1,8 @@
+import { useMemo } from 'react'
 import AnnouncementCard from './AnnouncementCard'
 import PromotionCard from './PromotionCard'
 
-export default function PostFeed({ club, posts, activeTab, reactions, onReact, currentUser, onDeletePost }) {
+export default function PostFeed({ club, posts, activeTab, reactions, onReact, currentUser, onDeletePost, onRequireLogin }) {
   if (club.status === 'pending') {
     return (
       <div className="feed">
@@ -21,6 +22,11 @@ export default function PostFeed({ club, posts, activeTab, reactions, onReact, c
     return false
   }
 
+  const sortedPosts = useMemo(
+    () => posts.slice().sort((a, b) => b.timestamp - a.timestamp),
+    [posts]
+  )
+
   return (
     <div className="feed">
       {activeTab === 'announcements' && <p className="club-description">{club.description}</p>}
@@ -35,32 +41,33 @@ export default function PostFeed({ club, posts, activeTab, reactions, onReact, c
           </div>
         </div>
       ) : (
-        posts
-          .slice()
-          .sort((a, b) => b.timestamp - a.timestamp)
-          .map((post) =>
-            post.type === 'announcement' ? (
-              <AnnouncementCard
-                key={post.id}
-                announcement={post}
-                club={club}
-                reactions={reactions[post.id]}
-                onReact={onReact}
-                canDelete={canDeletePost(post)}
-                onDelete={onDeletePost}
-              />
-            ) : (
-              <PromotionCard
-                key={post.id}
-                promotion={post}
-                club={club}
-                reactions={reactions[post.id]}
-                onReact={onReact}
-                canDelete={canDeletePost(post)}
-                onDelete={onDeletePost}
-              />
-            )
+        sortedPosts.map((post) =>
+          post.type === 'announcement' ? (
+            <AnnouncementCard
+              key={post.id}
+              announcement={post}
+              club={club}
+              reactions={reactions[post.id]}
+              onReact={onReact}
+              canDelete={canDeletePost(post)}
+              onDelete={onDeletePost}
+              currentUser={currentUser}
+              onRequireLogin={onRequireLogin}
+            />
+          ) : (
+            <PromotionCard
+              key={post.id}
+              promotion={post}
+              club={club}
+              reactions={reactions[post.id]}
+              onReact={onReact}
+              canDelete={canDeletePost(post)}
+              onDelete={onDeletePost}
+              currentUser={currentUser}
+              onRequireLogin={onRequireLogin}
+            />
           )
+        )
       )}
     </div>
   )

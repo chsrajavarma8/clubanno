@@ -12,6 +12,14 @@ export const authRouter = Router()
 const GENERIC_LOGIN_ERROR = 'Invalid username or password.'
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const DOB_RE = /^\d{4}-\d{2}-\d{2}$/ // 'YYYY-MM-DD', matches an <input type="date"> value
+const ALLOWED_DOMAINS = ['student.gitam.edu', 'gitam.in']
+const GITAM_EMAIL_ERROR = 'Use your GITAM email (e.g. yourname@student.gitam.edu or clubname@gitam.in).'
+
+function isGitamEmail(email) {
+  if (!EMAIL_RE.test(email)) return false
+  const domain = email.split('@')[1]?.toLowerCase()
+  return ALLOWED_DOMAINS.includes(domain)
+}
 
 // Re-verifies email+DOB against the database. Used by both forgot-password
 // steps so the actual match check only lives in one place.
@@ -56,8 +64,8 @@ authRouter.post('/signup', asyncHandler(async (req, res) => {
   }
 
   const uname = email.trim().toLowerCase()
-  if (!EMAIL_RE.test(uname)) {
-    return res.status(400).json({ error: 'Enter a valid email address.' })
+  if (!isGitamEmail(uname)) {
+    return res.status(400).json({ error: GITAM_EMAIL_ERROR })
   }
   if (!DOB_RE.test(dob)) {
     return res.status(400).json({ error: 'Enter a valid date of birth.' })
@@ -117,6 +125,20 @@ authRouter.get('/me', requireAuth, asyncHandler(async (req, res) => {
   res.json({ identity: toIdentity(req.user) })
 }))
 
+// Admin-only: list self-service "user" (student) accounts so the admin panel
+// can show who has signed up. Never returns passwordHash.
+authRouter.get('/students', requireAuth, requireAdmin, asyncHandler(async (req, res) => {
+  const students = await User.find({ role: 'user' }).sort({ createdAt: -1 })
+  res.json({
+    students: students.map((u) => ({
+      id: u._id.toString(),
+      email: u.username,
+      dob: u.dob,
+      joinedAt: u.createdAt,
+    })),
+  })
+}))
+
 // Admin-only: create a new club account. clubId is generated here (not
 // trusted from the client) and returned so the frontend can use it locally
 // (e.g. as post.clubId) right after creation.
@@ -127,8 +149,8 @@ authRouter.post('/clubs', requireAuth, requireAdmin, asyncHandler(async (req, re
   }
 
   const uname = username.trim().toLowerCase()
-  if (!EMAIL_RE.test(uname)) {
-    return res.status(400).json({ error: 'Enter a valid college email address (e.g. clubname@college.edu).' })
+  if (!isGitamEmail(uname)) {
+    return res.status(400).json({ error: GITAM_EMAIL_ERROR })
   }
   const existing = await User.findOne({ username: uname })
   if (existing) return res.status(409).json({ error: 'That email is already registered to a club. Use another.' })
