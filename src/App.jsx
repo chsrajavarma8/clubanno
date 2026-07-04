@@ -166,15 +166,29 @@ export default function App() {
       setCurrentUser(identity)
       if (identity.type === 'club') setSelectedClubId(identity.clubId)
       setShowLoginModal(false)
-      setToast(
-        identity.type === 'admin'
-          ? { title: 'Logged in as Admin', body: 'You can now review pending posts and manage clubs.' }
-          : { title: `Logged in as ${identity.name}`, body: 'You can now submit posts for admin approval.' }
-      )
+      setToast(loginToast(identity))
       return {}
     } catch (err) {
       return { error: err.message }
     }
+  }
+
+  async function handleSignup({ email, dob, password }) {
+    try {
+      const identity = await authService.signup(email, dob, password)
+      setCurrentUser(identity)
+      setShowLoginModal(false)
+      setToast({ title: 'Account created', body: `Welcome! You're logged in as ${identity.username}.` })
+      return {}
+    } catch (err) {
+      return { error: err.message }
+    }
+  }
+
+  function loginToast(identity) {
+    if (identity.type === 'admin') return { title: 'Logged in as Admin', body: 'You can now review pending posts and manage clubs.' }
+    if (identity.type === 'club') return { title: `Logged in as ${identity.name}`, body: 'You can now submit posts for admin approval.' }
+    return { title: `Logged in as ${identity.username}`, body: 'You can now browse and react to posts.' }
   }
 
   async function handleLogout() {
@@ -409,7 +423,7 @@ export default function App() {
       )}
 
       {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} onLogin={handleLogin} />
+        <LoginModal onClose={() => setShowLoginModal(false)} onLogin={handleLogin} onSignup={handleSignup} />
       )}
 
       {showAdminPanel && (

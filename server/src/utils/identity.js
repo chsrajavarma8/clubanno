@@ -4,6 +4,9 @@ export function toIdentity(user) {
   if (user.role === 'admin') {
     return { type: 'admin', uid: user._id.toString() }
   }
+  if (user.role === 'user') {
+    return { type: 'user', uid: user._id.toString(), username: user.username }
+  }
   return {
     type: 'club',
     uid: user._id.toString(),

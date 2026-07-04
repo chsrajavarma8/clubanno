@@ -4,6 +4,7 @@ export default function Sidebar({ clubs, selectedClubId, onSelectClub, currentUs
   let badgeText = 'Browsing as Guest'
   if (currentUser?.type === 'admin') badgeText = 'Logged in · Admin'
   if (currentUser?.type === 'club') badgeText = `Logged in · ${currentUser.name} Committee`
+  if (currentUser?.type === 'user') badgeText = `Logged in · ${currentUser.username}`
 
   function handleSelect(id) {
     onSelectClub(id)
