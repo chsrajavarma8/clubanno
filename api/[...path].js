@@ -29,6 +29,17 @@ function getApp() {
 }
 
 export default async function handler(req, res) {
-  const app = await getApp()
-  app(req, res)
+  try {
+    const app = await getApp()
+    app(req, res)
+  } catch (err) {
+    // Without this, a failed MongoDB connection (bad MONGODB_URI, Atlas
+    // network access, etc.) produces Vercel's generic non-JSON 500 page.
+    // The frontend then can't read `err.message` and falls back to a
+    // vague "Could not load X" message that hides the real cause. Returning
+    // JSON here means the actual error (e.g. the real Mongo connection
+    // error) shows up in the browser instead of a guess.
+    console.error('Failed to initialize app:', err)
+    res.status(500).json({ error: err.message || 'Server failed to start.' })
+  }
 }

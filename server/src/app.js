@@ -22,10 +22,12 @@ export function createApp() {
   app.use('/api/posts', postsRouter)
   app.use('/api/notifications', notificationsRouter)
 
-  // Fallback error handler so a thrown/rejected async route doesn't hang the request.
+  // Fallback error handler so a thrown/rejected async route doesn't hang the
+  // request. Includes the real error message (e.g. a MongoDB error) so it's
+  // visible in the browser instead of a generic, undebuggable message.
   app.use((err, req, res, next) => {
     console.error(err)
-    res.status(500).json({ error: 'Something went wrong.' })
+    res.status(500).json({ error: err.message || 'Something went wrong.' })
   })
 
   return app

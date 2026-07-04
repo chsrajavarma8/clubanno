@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Megaphone, ShieldCheck, LogOut, LogIn, Smile } from 'lucide-react'
+import { Megaphone, ShieldCheck, LogOut, LogIn, Smile, Menu } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import FilterBar from './components/FilterBar'
 import PostFeed from './components/PostFeed'
@@ -25,6 +25,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('announcements') // 'announcements' | 'promotions'
   const [activeFilters, setActiveFilters] = useState([])
   const [notifOpen, setNotifOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showAdminPanel, setShowAdminPanel] = useState(false)
@@ -315,11 +316,21 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar clubs={clubs} selectedClubId={selectedClubId} onSelectClub={handleSelectClub} currentUser={currentUser} />
+      <Sidebar
+        clubs={clubs}
+        selectedClubId={selectedClubId}
+        onSelectClub={handleSelectClub}
+        currentUser={currentUser}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
+      />
 
       <div className="main">
         <div className="topbar">
           <div className="topbar-title">
+            <button className="icon-btn mobile-menu-btn" onClick={() => setMobileNavOpen(true)} aria-label="Open club list">
+              <Menu size={20} />
+            </button>
             <span>{selectedClub.icon}</span>
             <span>{selectedClub.name}</span>
           </div>
@@ -330,14 +341,14 @@ export default function App() {
                   <Smile size={18} />
                 </button>
                 <button className="btn-primary" onClick={() => setShowPostModal(true)}>
-                  <Megaphone size={14} /> New Post
+                  <Megaphone size={14} /> <span className="btn-label">New Post</span>
                 </button>
               </>
             )}
 
             {currentUser?.type === 'admin' && (
               <button className="btn-secondary" onClick={() => setShowAdminPanel(true)}>
-                <ShieldCheck size={14} /> Admin Panel
+                <ShieldCheck size={14} /> <span className="btn-label">Admin Panel</span>
                 {pendingPosts.length > 0 && <span className="tab-badge">{pendingPosts.length}</span>}
               </button>
             )}
@@ -355,7 +366,7 @@ export default function App() {
               </button>
             ) : (
               <button className="btn-secondary" onClick={() => setShowLoginModal(true)}>
-                <LogIn size={14} /> Log In
+                <LogIn size={14} /> <span className="btn-label">Log In</span>
               </button>
             )}
           </div>
