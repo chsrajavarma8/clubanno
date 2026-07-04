@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import mongoose from 'mongoose'
 import { authRouter } from './routes/auth.js'
 import { clubsRouter } from './routes/clubs.js'
 import { postsRouter } from './routes/posts.js'
@@ -16,7 +17,16 @@ export function createApp() {
   // the default 100kb JSON body limit.
   app.use(express.json({ limit: '25mb' }))
 
-  app.get('/api/health', (req, res) => res.json({ ok: true }))
+  // Reports which database this running instance is actually connected to
+  // (readyState 1 = connected) — the fastest way to confirm whether a
+  // deployment is talking to the same database you seeded locally.
+  app.get('/api/health', (req, res) =>
+    res.json({
+      ok: true,
+      db: mongoose.connection.name || null,
+      dbConnected: mongoose.connection.readyState === 1,
+    })
+  )
   app.use('/api/auth', authRouter)
   app.use('/api/clubs', clubsRouter)
   app.use('/api/posts', postsRouter)
